@@ -72,7 +72,61 @@ class SlapGame {
     this.floatingTexts = [];
     this.comicEffects = [];
 
+    // 4 Bangladeshi Campaign Levels (Purpose & Progression)
+    this.levels = [
+      {
+        id: 1,
+        title: 'বৈঠকখানা জেরা (Baithak Interrogation)',
+        shortTitle: 'বৈঠকখানা জেরা',
+        arena: 0,
+        bossName: 'মাওলানা জালাল',
+        maxHP: 600,
+        timeLimit: 45,
+        guardChance: 0.15,
+        guardCooldown: 6.5,
+        story: 'প্রথম শুনানি! বৈঠকখানায় জেরা চলছে। আসল সত্য বের করতে হবে!'
+      },
+      {
+        id: 2,
+        title: 'টংয়ের দোকান ধরপাকড় (Tong Dokan Showdown)',
+        shortTitle: 'টংয়ের দোকান',
+        arena: 1,
+        bossName: 'চাখোর মালেক',
+        maxHP: 1000,
+        timeLimit: 40,
+        guardChance: 0.45,
+        guardCooldown: 5.0,
+        story: 'চা খেতে এসে ধরা খেয়েছে! হাত তুলে নিজেকে বাঁচানোর চেষ্টা করছে—হেভি হিটে গার্ড ভাঙো!'
+      },
+      {
+        id: 3,
+        title: 'পুরান ঢাকা ছাদ তাড়া (Puran Dhaka Rooftop)',
+        shortTitle: 'পুরান ঢাকা ছাদ',
+        arena: 2,
+        bossName: 'শাকরাইন শফিক',
+        maxHP: 1400,
+        timeLimit: 35,
+        guardChance: 0.60,
+        guardCooldown: 3.8,
+        story: 'ঘুড়ির ভিড়ে ছাদ দিয়ে পালাচ্ছে! দ্রুত পরাস্ত করো ঘুড়ির সুতো কাটার আগে!'
+      },
+      {
+        id: 4,
+        title: 'সদরঘাট ফাইনাল লঞ্চ এস্কেপ (Sadarghat Boss Climax)',
+        shortTitle: 'সদরঘাট লঞ্চ ঘাট',
+        arena: 3,
+        bossName: 'লঞ্চ পলাতক আসাদ',
+        maxHP: 2000,
+        timeLimit: 35,
+        guardChance: 0.75,
+        guardCooldown: 2.8,
+        story: 'লঞ্চের সাইরেন বাজছে! বরিশালের লঞ্চ ছাড়ার আগেই পরাস্ত করো!'
+      }
+    ];
+
     // Game modes & settings
+    this.gameMode = 'campaign'; // 'campaign' or 'freeplay'
+    this.currentLevelIndex = 0;
     this.arenaIndex = 0;
     this.arenas = [
       'BD Baithak (বৈঠকখানা)',
@@ -80,10 +134,16 @@ class SlapGame {
       'Puran Dhaka (পুরান ঢাকা)',
       'Sadarghat (সদরঘাট লঞ্চ)'
     ];
+
+    // Progression Stats & Health
+    this.targetMaxHP = 600;
+    this.targetHP = 600;
+    this.levelTimeLeft = 45;
+    this.isLevelActive = false;
+    this.levelTimerInterval = null;
+    this.guardCheckTimer = 3.0;
+    this.totalCampaignScore = 0;
     this.slowMo = false;
-    this.isTimedMode = false;
-    this.timeLeft = 30;
-    this.timerInterval = null;
 
     // Ultimate sequence state
     this.isUltimateActive = false;
@@ -99,31 +159,67 @@ class SlapGame {
       streakCount: document.getElementById('streak-count'),
       streakMult: document.getElementById('streak-mult'),
       streakFill: document.getElementById('streak-bar-fill'),
-      dizzyFill: document.getElementById('dizzy-bar-fill'),
-      dizzyPercent: document.getElementById('dizzy-percent'),
+      targetHPFill: document.getElementById('target-hp-fill'),
+      targetHPText: document.getElementById('target-hp-text'),
+      targetMoodBadge: document.getElementById('target-mood-badge'),
+      guardBadge: document.getElementById('guard-badge'),
       rageFill: document.getElementById('rage-bar-fill'),
       ragePercent: document.getElementById('rage-percent'),
       comicBanner: document.getElementById('comic-banner'),
+      levelBadge: document.getElementById('level-badge'),
+      levelIntroBanner: document.getElementById('level-intro-banner'),
+      introLevelNum: document.getElementById('intro-level-num'),
+      introTitle: document.getElementById('intro-title'),
+      introDesc: document.getElementById('intro-desc'),
+      introTargetName: document.getElementById('intro-target-name'),
+      introTargetHP: document.getElementById('intro-target-hp'),
       btnSlap: document.getElementById('btn-slap'),
       btnTightSlap: document.getElementById('btn-tight-slap'),
       btnPunch: document.getElementById('btn-punch'),
       btnKick: document.getElementById('btn-kick'),
       btnUltimate: document.getElementById('btn-ultimate'),
       btnSound: document.getElementById('btn-sound'),
-      btnTimerMode: document.getElementById('btn-timer-mode'),
+      // Mode Navigation Bar Elements
+      modeBtnCampaign: document.getElementById('mode-btn-campaign'),
+      modeBtnChallenge: document.getElementById('mode-btn-challenge'),
+      modeBtnFreeplay: document.getElementById('mode-btn-freeplay'),
+      campaignLevelPills: document.getElementById('campaign-level-pills'),
       btnBg: document.getElementById('btn-bg'),
+      arenaBtnText: document.getElementById('arena-btn-text'),
       btnSlowMo: document.getElementById('btn-slowmo'),
       btnFullscreen: document.getElementById('btn-fullscreen'),
       btnReset: document.getElementById('btn-reset'),
       timerDisplay: document.getElementById('timer-display'),
       timeLeftText: document.getElementById('time-left'),
       modeIndicator: document.getElementById('mode-indicator'),
-      ultDesc: document.getElementById('ult-desc')
+      ultDesc: document.getElementById('ult-desc'),
+      // Modals
+      modalStageClear: document.getElementById('modal-stage-clear'),
+      clearLevelTitle: document.getElementById('clear-level-title'),
+      clearLevelSub: document.getElementById('clear-level-sub'),
+      clearStars: document.getElementById('clear-stars'),
+      clearStatScore: document.getElementById('clear-stat-score'),
+      clearStatTime: document.getElementById('clear-stat-time'),
+      clearStatStreak: document.getElementById('clear-stat-streak'),
+      clearStatRank: document.getElementById('clear-stat-rank'),
+      btnNextStage: document.getElementById('btn-next-stage'),
+      btnReplayStage: document.getElementById('btn-replay-stage'),
+      modalGameOver: document.getElementById('modal-game-over'),
+      failStatHP: document.getElementById('fail-stat-hp'),
+      failStatScore: document.getElementById('fail-stat-score'),
+      btnRetryStage: document.getElementById('btn-retry-stage'),
+      btnRestartCampaign: document.getElementById('btn-restart-campaign'),
+      modalCampaignClear: document.getElementById('modal-campaign-clear'),
+      champStatScore: document.getElementById('champ-stat-score'),
+      champStatStreak: document.getElementById('champ-stat-streak'),
+      btnPlayAgain: document.getElementById('btn-play-again'),
+      btnFreeplay: document.getElementById('btn-freeplay')
     };
 
     this.lastTime = performance.now();
 
     this.initEventListeners();
+    this.setGameMode('campaign', 0);
     this.gameLoop = this.gameLoop.bind(this);
     requestAnimationFrame(this.gameLoop);
   }
@@ -162,10 +258,16 @@ class SlapGame {
       this.dom.btnSound.innerHTML = isMuted ? '🔇 <span class="btn-text">Sound: OFF</span>' : '🔊 <span class="btn-text">Sound: ON</span>';
     });
 
+    // Arena Switcher Button
     this.dom.btnBg.addEventListener('click', () => {
       this.arenaIndex = (this.arenaIndex + 1) % this.arenas.length;
       const arenaName = this.arenas[this.arenaIndex].split(' ')[0];
-      this.dom.btnBg.innerHTML = `🎨 <span class="btn-text">Arena: ${arenaName}</span>`;
+      if (this.dom.arenaBtnText) {
+        this.dom.arenaBtnText.innerText = `Arena: ${arenaName}`;
+      } else {
+        this.dom.btnBg.innerHTML = `🎨 <span class="btn-text">Arena: ${arenaName}</span>`;
+      }
+      this.showComicBanner(`ARENA: ${this.arenas[this.arenaIndex]}`, 900);
     });
 
     this.dom.btnSlowMo.addEventListener('click', () => {
@@ -204,8 +306,89 @@ class SlapGame {
       });
     }
 
-    this.dom.btnReset.addEventListener('click', () => this.resetGame());
-    this.dom.btnTimerMode.addEventListener('click', () => this.toggleTimedMode());
+    // Reset / Retry Current Mode
+    this.dom.btnReset.addEventListener('click', () => {
+      if (this.gameMode === 'campaign') {
+        this.startCampaignLevel(this.currentLevelIndex);
+      } else if (this.gameMode === 'challenge') {
+        this.start30sChallenge();
+      } else {
+        this.resetGame();
+      }
+    });
+
+    // Dedicated Mode Navigation Bar Listeners
+    if (this.dom.modeBtnCampaign) {
+      this.dom.modeBtnCampaign.addEventListener('click', () => {
+        this.setGameMode('campaign', 0);
+      });
+    }
+
+    if (this.dom.modeBtnChallenge) {
+      this.dom.modeBtnChallenge.addEventListener('click', () => {
+        this.setGameMode('challenge');
+      });
+    }
+
+    if (this.dom.modeBtnFreeplay) {
+      this.dom.modeBtnFreeplay.addEventListener('click', () => {
+        this.setGameMode('freeplay');
+      });
+    }
+
+    // Direct Campaign Level Pills
+    const levelPills = document.querySelectorAll('.level-pill');
+    levelPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        const lvlIdx = parseInt(pill.dataset.level, 10);
+        this.setGameMode('campaign', lvlIdx);
+      });
+    });
+
+    // Modal Button Action Listeners (Touch + Click for zero-delay mobile response)
+    const bindModalAction = (btn, action) => {
+      if (!btn) return;
+      const handler = (e) => {
+        if (e.cancelable && e.type === 'touchstart') e.preventDefault();
+        action();
+      };
+      btn.addEventListener('touchstart', handler, { passive: false });
+      btn.addEventListener('click', handler);
+    };
+
+    bindModalAction(this.dom.btnNextStage, () => {
+      this.hideAllModals();
+      this.startCampaignLevel(this.currentLevelIndex + 1);
+    });
+
+    bindModalAction(this.dom.btnReplayStage, () => {
+      this.hideAllModals();
+      this.startCampaignLevel(this.currentLevelIndex);
+    });
+
+    bindModalAction(this.dom.btnRetryStage, () => {
+      this.hideAllModals();
+      this.startCampaignLevel(this.currentLevelIndex);
+    });
+
+    bindModalAction(this.dom.btnRestartCampaign, () => {
+      this.hideAllModals();
+      this.totalCampaignScore = 0;
+      this.score = 0;
+      this.setGameMode('campaign', 0);
+    });
+
+    bindModalAction(this.dom.btnPlayAgain, () => {
+      this.hideAllModals();
+      this.totalCampaignScore = 0;
+      this.score = 0;
+      this.setGameMode('campaign', 0);
+    });
+
+    bindModalAction(this.dom.btnFreeplay, () => {
+      this.hideAllModals();
+      this.setGameMode('freeplay');
+    });
 
     // Direct Canvas Touch & Click (Mobile Tap on Character or Crowd)
     let touchStartX = 0;
@@ -320,39 +503,276 @@ class SlapGame {
     setTimeout(() => btn.classList.remove('btn-pressed'), 120);
   }
 
-  toggleTimedMode() {
-    this.isTimedMode = !this.isTimedMode;
-    if (this.isTimedMode) {
-      this.timeLeft = 30;
-      this.dom.timerDisplay.classList.remove('hidden');
-      this.dom.btnTimerMode.innerText = '⏱️ Stop Challenge';
-      this.dom.modeIndicator.innerText = '30S CHALLENGE';
-      this.dom.modeIndicator.style.color = '#ff4757';
-      this.resetGame();
+  setGameMode(mode, levelIndex = 0) {
+    this.gameMode = mode;
+    this.hideAllModals();
+    clearInterval(this.levelTimerInterval);
 
-      clearInterval(this.timerInterval);
-      this.timerInterval = setInterval(() => {
-        this.timeLeft--;
-        this.dom.timeLeftText.innerText = this.timeLeft;
-        if (this.timeLeft <= 0) {
-          clearInterval(this.timerInterval);
-          this.endTimedMode();
-        }
-      }, 1000);
-    } else {
-      clearInterval(this.timerInterval);
-      this.dom.timerDisplay.classList.add('hidden');
-      this.dom.btnTimerMode.innerText = '⏱️ 30s Challenge';
-      this.dom.modeIndicator.innerText = 'FREE PLAY';
-      this.dom.modeIndicator.style.color = '#2ed573';
+    // Update active mode tab button styles
+    if (this.dom.modeBtnCampaign) this.dom.modeBtnCampaign.classList.toggle('active', mode === 'campaign');
+    if (this.dom.modeBtnChallenge) this.dom.modeBtnChallenge.classList.toggle('active', mode === 'challenge');
+    if (this.dom.modeBtnFreeplay) this.dom.modeBtnFreeplay.classList.toggle('active', mode === 'freeplay');
+
+    if (mode === 'campaign') {
+      if (this.dom.campaignLevelPills) this.dom.campaignLevelPills.classList.remove('hidden');
+      this.startCampaignLevel(levelIndex);
+    } else if (mode === 'challenge') {
+      if (this.dom.campaignLevelPills) this.dom.campaignLevelPills.classList.add('hidden');
+      this.start30sChallenge();
+    } else if (mode === 'freeplay') {
+      if (this.dom.campaignLevelPills) this.dom.campaignLevelPills.classList.add('hidden');
+      this.startFreePlay();
     }
   }
 
-  endTimedMode() {
-    this.isTimedMode = false;
-    this.dom.btnTimerMode.innerText = '⏱️ 30s Challenge';
-    this.dom.modeIndicator.innerText = 'GAME OVER';
-    this.showComicBanner(`FINAL SCORE: ${this.score} (MAX STREAK: ${this.maxStreak})!`, 3000);
+  start30sChallenge() {
+    this.hideAllModals();
+    clearInterval(this.levelTimerInterval);
+
+    this.targetMaxHP = 2500;
+    this.targetHP = 2500;
+    this.levelTimeLeft = 30;
+    this.score = 0;
+    this.combo = 0;
+    this.streak = 0;
+    this.maxStreak = 0;
+    this.isLevelActive = true;
+    this.guardCheckTimer = 2.5;
+
+    this.player.resetToIdle();
+    this.target.reset();
+    this.target.mood = 'nervous';
+
+    if (this.dom.levelBadge) {
+      this.dom.levelBadge.innerText = '⏱️ 30S CHALLENGE RUSH';
+    }
+    if (this.dom.modeIndicator) {
+      this.dom.modeIndicator.innerText = 'TIMED RUSH';
+      this.dom.modeIndicator.style.color = '#ff4757';
+    }
+
+    this.dom.timerDisplay.classList.remove('hidden');
+    this.dom.timerDisplay.style.background = 'rgba(255, 71, 87, 0.95)';
+    this.dom.timeLeftText.innerText = this.levelTimeLeft;
+
+    this.showComicBanner('⏱️ 30S RUSH: GET HIGHEST SCORE!', 1400);
+    soundEngine.playComboSound(2);
+
+    this.levelTimerInterval = setInterval(() => {
+      if (!this.isLevelActive || this.gameMode !== 'challenge') return;
+      this.levelTimeLeft--;
+      this.dom.timeLeftText.innerText = Math.max(this.levelTimeLeft, 0);
+
+      if (this.levelTimeLeft <= 10) {
+        this.dom.timerDisplay.style.background = '#ff3838';
+      }
+
+      if (this.levelTimeLeft <= 0) {
+        clearInterval(this.levelTimerInterval);
+        this.isLevelActive = false;
+        soundEngine.playGameOver();
+        this.showComicBanner(`⏰ TIME UP! FINAL SCORE: ${this.score.toLocaleString()}`, 3500);
+        if (this.dom.modeIndicator) {
+          this.dom.modeIndicator.innerText = 'CHALLENGE OVER';
+        }
+      }
+    }, 1000);
+
+    this.updateHUD();
+  }
+
+  startFreePlay() {
+    this.hideAllModals();
+    clearInterval(this.levelTimerInterval);
+    this.isLevelActive = false;
+    this.target.reset();
+    this.player.resetToIdle();
+    this.target.isGuarding = false;
+    this.target.mood = 'smug';
+
+    if (this.dom.timerDisplay) this.dom.timerDisplay.classList.add('hidden');
+    if (this.dom.modeIndicator) {
+      this.dom.modeIndicator.innerText = 'FREE PLAY';
+      this.dom.modeIndicator.style.color = '#2ed573';
+    }
+    if (this.dom.levelBadge) {
+      this.dom.levelBadge.innerText = '🎨 FREE PLAY PRACTICE';
+    }
+
+    this.showComicBanner('FREE PLAY: PRACTICE ALL MOVES!', 1200);
+    this.updateHUD();
+  }
+
+  startCampaignLevel(lvlIdx) {
+    this.hideAllModals();
+    if (lvlIdx >= this.levels.length) {
+      this.showCampaignVictoryModal();
+      return;
+    }
+
+    this.currentLevelIndex = lvlIdx;
+    const lvl = this.levels[lvlIdx];
+    this.arenaIndex = lvl.arena;
+    this.targetMaxHP = lvl.maxHP;
+    this.targetHP = lvl.maxHP;
+    this.levelTimeLeft = lvl.timeLimit;
+    this.stageMaxStreak = 0;
+    this.guardCheckTimer = 3.2;
+
+    // Reset combat state
+    this.player.resetToIdle();
+    this.target.reset();
+    this.rage = 0;
+    this.streak = 0;
+    this.combo = 0;
+    this.particles = [];
+    this.floatingTexts = [];
+    this.comicEffects = [];
+    this.speechBubbles = [];
+
+    // UI Updates
+    if (this.dom.levelBadge) {
+      this.dom.levelBadge.innerText = `⭐ LEVEL ${lvl.id}: ${lvl.shortTitle}`;
+    }
+    if (this.dom.modeIndicator) {
+      this.dom.modeIndicator.innerText = `LEVEL ${lvl.id} / ${this.levels.length}`;
+      this.dom.modeIndicator.style.color = '#feca57';
+    }
+    if (this.dom.arenaBtnText) {
+      const arenaName = this.arenas[this.arenaIndex].split(' ')[0];
+      this.dom.arenaBtnText.innerText = `Arena: ${arenaName}`;
+    } else if (this.dom.btnBg) {
+      const arenaName = this.arenas[this.arenaIndex].split(' ')[0];
+      this.dom.btnBg.innerHTML = `🎨 <span class="btn-text">Arena: ${arenaName}</span>`;
+    }
+
+    // Update active level pill
+    const levelPills = document.querySelectorAll('.level-pill');
+    levelPills.forEach((p, idx) => {
+      p.classList.toggle('active', idx === lvlIdx);
+    });
+
+    // Show Level Intro Banner
+    if (this.dom.levelIntroBanner) {
+      this.dom.introLevelNum.innerText = `LEVEL ${lvl.id} MISSION`;
+      this.dom.introTitle.innerText = lvl.title;
+      this.dom.introDesc.innerText = lvl.story;
+      this.dom.introTargetName.innerText = lvl.bossName;
+      this.dom.introTargetHP.innerText = lvl.maxHP;
+      this.dom.levelIntroBanner.classList.remove('hidden');
+
+      clearTimeout(this.introBannerTimeout);
+      this.introBannerTimeout = setTimeout(() => {
+        this.dom.levelIntroBanner.classList.add('hidden');
+      }, 2400);
+    }
+
+    // Countdown Timer
+    clearInterval(this.levelTimerInterval);
+    this.dom.timeLeftText.innerText = this.levelTimeLeft;
+    this.dom.timerDisplay.classList.remove('hidden');
+    this.dom.timerDisplay.style.background = 'rgba(255, 71, 87, 0.9)';
+    this.isLevelActive = true;
+
+    this.levelTimerInterval = setInterval(() => {
+      if (!this.isLevelActive || this.gameMode !== 'campaign') return;
+      this.levelTimeLeft--;
+      this.dom.timeLeftText.innerText = Math.max(this.levelTimeLeft, 0);
+
+      if (this.levelTimeLeft <= 10) {
+        this.dom.timerDisplay.style.background = '#ff3838';
+      }
+
+      if (this.levelTimeLeft <= 0) {
+        clearInterval(this.levelTimerInterval);
+        this.onStageFailed();
+      }
+    }, 1000);
+
+    this.updateHUD();
+    soundEngine.playComboSound(1);
+  }
+
+  onStageClear() {
+    this.isLevelActive = false;
+    clearInterval(this.levelTimerInterval);
+
+    // Audio
+    soundEngine.playStageClear();
+
+    const lvl = this.levels[this.currentLevelIndex];
+    const timeBonus = this.levelTimeLeft * 30;
+    this.score += timeBonus;
+    this.totalCampaignScore += this.score;
+
+    if (this.currentLevelIndex >= this.levels.length - 1) {
+      setTimeout(() => this.showCampaignVictoryModal(), 600);
+      return;
+    }
+
+    // Calculate stars
+    let stars = 1;
+    if (this.levelTimeLeft >= lvl.timeLimit * 0.45 && this.maxStreak >= 8) stars = 3;
+    else if (this.levelTimeLeft >= lvl.timeLimit * 0.2) stars = 2;
+
+    let rank = 'B-RANK';
+    if (stars === 3) rank = 'S-RANK';
+    else if (stars === 2) rank = 'A-RANK';
+
+    if (this.dom.modalStageClear) {
+      this.dom.clearLevelTitle.innerText = `${lvl.title} সমাপ্ত!`;
+      this.dom.clearLevelSub.innerText = `${lvl.bossName} পরাজয় স্বীকার করেছে ও সত্য উন্মোচিত হয়েছে!`;
+      this.dom.clearStatScore.innerText = this.score.toLocaleString();
+      this.dom.clearStatTime.innerText = `+${timeBonus}`;
+      this.dom.clearStatStreak.innerText = `${this.maxStreak}x`;
+      this.dom.clearStatRank.innerText = rank;
+
+      const starEls = this.dom.clearStars.querySelectorAll('.star');
+      starEls.forEach((s, idx) => {
+        if (idx < stars) s.classList.add('star-active');
+        else s.classList.remove('star-active');
+      });
+
+      setTimeout(() => {
+        this.dom.modalStageClear.classList.remove('hidden');
+      }, 500);
+    }
+  }
+
+  onStageFailed() {
+    this.isLevelActive = false;
+    clearInterval(this.levelTimerInterval);
+
+    soundEngine.playGameOver();
+
+    if (this.dom.modalGameOver) {
+      this.dom.failStatHP.innerText = `${Math.round(this.targetHP)} / ${this.targetMaxHP} HP`;
+      this.dom.failStatScore.innerText = this.score.toLocaleString();
+      setTimeout(() => {
+        this.dom.modalGameOver.classList.remove('hidden');
+      }, 400);
+    }
+  }
+
+  showCampaignVictoryModal() {
+    this.isLevelActive = false;
+    clearInterval(this.levelTimerInterval);
+
+    soundEngine.playStageClear();
+
+    if (this.dom.modalCampaignClear) {
+      this.dom.champStatScore.innerText = this.totalCampaignScore.toLocaleString();
+      this.dom.champStatStreak.innerText = `${this.maxStreak}x`;
+      setTimeout(() => {
+        this.dom.modalCampaignClear.classList.remove('hidden');
+      }, 500);
+    }
+  }
+
+  hideAllModals() {
+    if (this.dom.modalStageClear) this.dom.modalStageClear.classList.add('hidden');
+    if (this.dom.modalGameOver) this.dom.modalGameOver.classList.add('hidden');
+    if (this.dom.modalCampaignClear) this.dom.modalCampaignClear.classList.add('hidden');
   }
 
   // ==========================================
@@ -386,35 +806,74 @@ class SlapGame {
       } catch (err) {}
     }
 
-    if (actionType === 'slap') {
-      soundEngine.playSlap();
-      this.shakeScreen(4);
-      this.spawnImpactParticles(this.target.x - 20, this.target.y - 45, '#ff4757', 14);
-      this.spawnComicText('SLAP!', this.target.x, this.target.y - 75, '#ff6b81');
-    } else if (actionType === 'tight-slap') {
-      soundEngine.playTightSlap();
-      this.shakeScreen(15);
-      this.flashAlpha = 0.5; // Flash effect
-      this.spawnImpactParticles(this.target.x - 25, this.target.y - 50, '#feca57', 28);
-      this.spawnComicText('THUNDER SLAP!', this.target.x, this.target.y - 90, '#feca57');
-    } else if (actionType === 'punch') {
-      soundEngine.playPunch();
-      this.shakeScreen(9);
-      this.spawnImpactParticles(this.target.x - 15, this.target.y + 10, '#ff9f43', 20);
-      this.spawnComicText('POW!', this.target.x, this.target.y - 20, '#ff9f43');
-    } else if (actionType === 'kick') {
-      soundEngine.playKick();
-      this.shakeScreen(14);
-      this.spawnImpactParticles(this.target.x - 20, this.target.y + 40, '#00d2d3', 24);
-      this.spawnComicText('KAPOW!', this.target.x, this.target.y - 80, '#00d2d3');
+    // Base damage table
+    const damageTable = {
+      'slap': 20,
+      'tight-slap': 55,
+      'punch': 40,
+      'kick': 75
+    };
+    const baseDmg = damageTable[actionType] || 20;
+
+    // Target hit recoil & guard evaluation
+    const hitResult = this.target.takeHit(actionType);
+    let actualDamage = baseDmg;
+
+    if (hitResult.blocked) {
+      // Guard blocked!
+      soundEngine.playGuardBlock();
+      this.shakeScreen(3);
+      actualDamage = 5; // Minimal chip damage
+      this.spawnImpactParticles(this.target.x - 20, this.target.y - 45, '#00d2d3', 10);
+      this.spawnComicText('🛡️ BLOCKED!', this.target.x, this.target.y - 75, '#00d2d3');
+      this.showComicBanner('🛡️ BLOCKED! TIGHT SLAP OR PUNCH BREAKS GUARD!', 900);
+    } else if (hitResult.broken) {
+      // Guard shattered!
+      soundEngine.playGuardBreak();
+      this.shakeScreen(20);
+      this.flashAlpha = 0.5;
+      actualDamage = Math.round(baseDmg * 1.5); // Guard break critical bonus
+      this.spawnImpactParticles(this.target.x - 25, this.target.y - 50, '#ff4757', 30);
+      this.spawnComicText('💥 GUARD BREAK!', this.target.x, this.target.y - 85, '#ff4757');
+      this.showComicBanner('💥 GUARD BROKEN! CRITICAL DAMAGE!', 1000);
+    } else {
+      // Normal Unguarded Hit
+      if (actionType === 'slap') {
+        soundEngine.playSlap();
+        this.shakeScreen(4);
+        this.spawnImpactParticles(this.target.x - 20, this.target.y - 45, '#ff4757', 14);
+        this.spawnComicText('SLAP!', this.target.x, this.target.y - 75, '#ff6b81');
+      } else if (actionType === 'tight-slap') {
+        soundEngine.playTightSlap();
+        this.shakeScreen(15);
+        this.flashAlpha = 0.5;
+        this.spawnImpactParticles(this.target.x - 25, this.target.y - 50, '#feca57', 28);
+        this.spawnComicText('THUNDER SLAP!', this.target.x, this.target.y - 90, '#feca57');
+      } else if (actionType === 'punch') {
+        soundEngine.playPunch();
+        this.shakeScreen(9);
+        this.spawnImpactParticles(this.target.x - 15, this.target.y + 10, '#ff9f43', 20);
+        this.spawnComicText('POW!', this.target.x, this.target.y - 20, '#ff9f43');
+      } else if (actionType === 'kick') {
+        soundEngine.playKick();
+        this.shakeScreen(14);
+        this.spawnImpactParticles(this.target.x - 20, this.target.y + 40, '#00d2d3', 24);
+        this.spawnComicText('KAPOW!', this.target.x, this.target.y - 80, '#00d2d3');
+      }
     }
 
-    // Target recoil physics
-    this.target.takeHit(actionType);
-
-    // Points table
+    // Register hit for score & multipliers
     const pointsMap = { 'slap': 10, 'tight-slap': 35, 'punch': 25, 'kick': 50 };
-    this.registerHit(pointsMap[actionType] || 10);
+    this.registerHit(pointsMap[actionType] || 10, actualDamage);
+
+    // Apply damage to Boss Target HP
+    if (this.gameMode === 'campaign' && this.isLevelActive) {
+      this.targetHP = Math.max(this.targetHP - actualDamage, 0);
+      if (this.targetHP <= 0) {
+        this.targetHP = 0;
+        this.onStageClear();
+      }
+    }
 
     // Crowd dynamic reactions
     this.triggerCrowdHitReaction(actionType);
@@ -448,16 +907,29 @@ class SlapGame {
         Math.random() > 0.5 ? '#feca57' : '#ff4757',
         8
       );
-      this.registerHit(35);
+      this.registerHit(35, 25);
       this.triggerCrowdBubble('mob', Math.random() > 0.5 ? 'AROH DEN!' : 'MAAR SHALA RE!');
+
+      if (this.gameMode === 'campaign' && this.isLevelActive) {
+        this.targetHP = Math.max(this.targetHP - 25, 0);
+      }
 
       if (this.ultimateHitsLeft === 0) {
         soundEngine.playTightSlap();
         this.shakeScreen(20);
         this.target.takeHit('tight-slap');
         this.spawnComicText('FINISHER!', this.target.x, this.target.y - 100, '#ff4757');
-        this.registerHit(150);
+        this.registerHit(150, 150);
         this.triggerCrowdBubble('symp', 'MOB KOIREN NA!');
+
+        if (this.gameMode === 'campaign' && this.isLevelActive) {
+          this.targetHP = Math.max(this.targetHP - 150, 0);
+          if (this.targetHP <= 0) {
+            this.targetHP = 0;
+            this.onStageClear();
+          }
+        }
+
         setTimeout(() => {
           this.isUltimateActive = false;
           this.player.resetToIdle();
@@ -657,10 +1129,83 @@ class SlapGame {
       setTimeout(() => this.dom.comboCard.classList.remove('pulse'), 120);
     }
 
-    // Dizziness Bar
-    const dizzyVal = Math.round(this.target.dizziness);
-    this.dom.dizzyPercent.innerText = `${dizzyVal}%`;
-    this.dom.dizzyFill.style.width = `${dizzyVal}%`;
+    // Target Boss HP Bar & Dynamic Mood Calculation
+    if (this.gameMode === 'campaign' || this.gameMode === 'challenge') {
+      const hpPct = Math.max(0, Math.min(100, (this.targetHP / this.targetMaxHP) * 100));
+      if (this.dom.targetHPFill) {
+        this.dom.targetHPFill.style.width = `${hpPct}%`;
+        this.dom.targetHPFill.classList.remove('warning', 'danger');
+        if (hpPct <= 25) {
+          this.dom.targetHPFill.classList.add('danger');
+        } else if (hpPct <= 50) {
+          this.dom.targetHPFill.classList.add('warning');
+        }
+      }
+      if (this.dom.targetHPText) {
+        this.dom.targetHPText.innerText = `${Math.round(this.targetHP)} / ${this.targetMaxHP}`;
+      }
+
+      // Guard pill badge
+      if (this.dom.guardBadge) {
+        if (this.target.isGuarding) {
+          this.dom.guardBadge.classList.remove('hidden');
+        } else {
+          this.dom.guardBadge.classList.add('hidden');
+        }
+      }
+
+      // Dynamic Character Mood Calculation
+      let moodKey = 'smug';
+      let moodLabel = '😎 SMUG';
+      let moodClass = 'mood-smug';
+
+      if (this.target.guardBreakStunTimer > 0 || this.target.isDizzy) {
+        moodKey = 'stunned';
+        moodLabel = '💫 STUNNED';
+        moodClass = 'mood-stunned';
+      } else if (this.target.isGuarding) {
+        moodKey = 'guarding';
+        moodLabel = '🛡️ GUARDING';
+        moodClass = 'mood-guarding';
+      } else {
+        const hpRatio = this.targetHP / this.targetMaxHP;
+        if (hpRatio > 0.65) {
+          moodKey = 'smug';
+          moodLabel = '😎 SMUG';
+          moodClass = 'mood-smug';
+        } else if (hpRatio > 0.3) {
+          moodKey = 'nervous';
+          moodLabel = '😰 NERVOUS';
+          moodClass = 'mood-nervous';
+        } else {
+          moodKey = 'terrified';
+          moodLabel = '😭 BEGGING';
+          moodClass = 'mood-terrified';
+        }
+      }
+
+      this.target.mood = moodKey;
+      if (this.dom.targetMoodBadge) {
+        this.dom.targetMoodBadge.innerText = moodLabel;
+        this.dom.targetMoodBadge.className = `mood-pill ${moodClass}`;
+      }
+    } else {
+      if (this.dom.targetHPFill) {
+        this.dom.targetHPFill.style.width = '100%';
+        this.dom.targetHPFill.classList.remove('warning', 'danger');
+      }
+      if (this.dom.targetHPText) {
+        this.dom.targetHPText.innerText = 'FREE PLAY (∞)';
+      }
+      if (this.dom.guardBadge) {
+        this.dom.guardBadge.classList.add('hidden');
+      }
+      if (this.dom.targetMoodBadge) {
+        this.dom.targetMoodBadge.innerText = '😎 SANDBOX';
+        this.dom.targetMoodBadge.className = 'mood-pill mood-smug';
+      }
+      this.target.mood = 'smug';
+    }
 
     // Rage Bar
     const rageVal = Math.round(this.rage);
@@ -673,24 +1218,28 @@ class SlapGame {
   }
 
   resetGame() {
-    this.score = 0;
-    this.combo = 0;
-    this.streak = 0;
-    this.streakMultiplier = 1.0;
-    this.streakTimer = 0;
-    this.rage = 0;
-    this.particles = [];
-    this.floatingTexts = [];
-    this.comicEffects = [];
-    this.speechBubbles = [];
-    this.player.resetToIdle();
-    this.player.streak = 0;
-    this.target.reset();
-    this.isUltimateActive = false;
-    this.dom.btnUltimate.disabled = true;
-    this.dom.ultDesc.innerText = 'Fill Rage To Unlock';
-    this.updateHUD();
-    this.showComicBanner('READY... FIGHT!', 800);
+    if (this.gameMode === 'campaign') {
+      this.startCampaignLevel(this.currentLevelIndex);
+    } else {
+      this.score = 0;
+      this.combo = 0;
+      this.streak = 0;
+      this.streakMultiplier = 1.0;
+      this.streakTimer = 0;
+      this.rage = 0;
+      this.particles = [];
+      this.floatingTexts = [];
+      this.comicEffects = [];
+      this.speechBubbles = [];
+      this.player.resetToIdle();
+      this.player.streak = 0;
+      this.target.reset();
+      this.isUltimateActive = false;
+      this.dom.btnUltimate.disabled = true;
+      this.dom.ultDesc.innerText = 'Fill Rage To Unlock';
+      this.updateHUD();
+      this.showComicBanner('READY... FIGHT!', 800);
+    }
   }
 
   // ==========================================
@@ -1837,9 +2386,28 @@ class SlapGame {
         }
       }
 
+      // 2.5 Periodic Target Guarding AI (Campaign Mode)
+      if (this.gameMode === 'campaign' && this.isLevelActive && !this.target.isGuarding && this.target.guardBreakStunTimer <= 0) {
+        this.guardCheckTimer -= effectiveDt;
+        if (this.guardCheckTimer <= 0) {
+          const lvl = this.levels[this.currentLevelIndex];
+          if (Math.random() < lvl.guardChance) {
+            this.target.setGuarding(true, 2.5);
+            this.triggerCrowdBubble('symp', 'THAMEN! MOB KOIREN NA!');
+            this.updateHUD();
+          }
+          this.guardCheckTimer = lvl.guardCooldown + Math.random() * 2;
+        }
+      }
+
       // 3. Update Characters
+      const prevGuarding = this.target.isGuarding;
+      const prevStunned = this.target.guardBreakStunTimer > 0;
       this.player.update(effectiveDt);
       this.target.update(effectiveDt);
+      if (prevGuarding !== this.target.isGuarding || prevStunned !== (this.target.guardBreakStunTimer > 0)) {
+        this.updateHUD();
+      }
 
       // 4. Update Ultimate Barrage
       this.updateUltimate(effectiveDt);
@@ -1959,7 +2527,25 @@ class SlapGame {
   }
 }
 
-// Start game once DOM is loaded
-window.addEventListener('DOMContentLoaded', () => {
-  window.slapGame = new SlapGame();
-});
+if (typeof window !== 'undefined') {
+  window.SlapGame = SlapGame;
+}
+
+// Start game once DOM is ready
+function startSlapGame() {
+  if (!window.slapGame) {
+    try {
+      window.slapGame = new SlapGame();
+    } catch (err) {
+      console.error('Failed to initialize SlapGame:', err);
+    }
+  }
+}
+
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', startSlapGame);
+  } else {
+    startSlapGame();
+  }
+}
