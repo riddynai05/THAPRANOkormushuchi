@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>THAPRANO KORMUSHUCHI - Web Arcade Game</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="game-container">
+    <!-- Top Header & Arcade HUD -->
+    <header id="arcade-header">
+      <div class="header-left">
+        <h1 class="game-logo">THAPRANO <span>KORMUSHUCHI</span></h1>
+        <div class="mode-badge" id="mode-indicator">FREE PLAY</div>
+      </div>
+
+      <div class="header-center">
+        <!-- Dizzy / Endurance Meter -->
+        <div class="meter-box">
+          <div class="meter-label">
+            <span>TARGET DIZZINESS</span>
+            <span id="dizzy-percent">0%</span>
+          </div>
+          <div class="meter-bar-outer">
+            <div id="dizzy-bar-fill" class="meter-bar-inner"></div>
+          </div>
+        </div>
+
+        <!-- Rage / Ultimate Meter -->
+        <div class="meter-box">
+          <div class="meter-label">
+            <span>RAGE POWER</span>
+            <span id="rage-percent">0%</span>
+          </div>
+          <div class="meter-bar-outer rage-outer">
+            <div id="rage-bar-fill" class="meter-bar-inner rage-inner"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Streak Card with Timer -->
+        <div class="streak-card" id="streak-card">
+          <div class="streak-top">
+            <span class="streak-icon">🔥</span>
+            <span class="streak-num" id="streak-count">0</span>
+            <span class="streak-lbl">STREAK</span>
+          </div>
+          <div class="streak-mult-badge" id="streak-mult">1.0x MULTI</div>
+          <div class="streak-bar-track">
+            <div id="streak-bar-fill" class="streak-bar-fill"></div>
+          </div>
+        </div>
+
+        <div class="score-card">
+          <div class="score-sub">SCORE</div>
+          <div id="score-display">0</div>
+        </div>
+        <div class="combo-card" id="combo-card">
+          <div class="combo-num" id="combo-count">0</div>
+          <div class="combo-text">COMBO</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Canvas Game Arena -->
+    <main id="canvas-wrapper">
+      <canvas id="gameCanvas" width="1100" height="580"></canvas>
+
+      <!-- Comic floating overlay for critical hits -->
+      <div id="comic-banner" class="comic-banner"></div>
+
+      <!-- Arena Selector Overlay (Quick buttons) -->
+      <div class="top-controls">
+        <button id="btn-sound" class="icon-btn" title="Toggle Sound (M)">🔊 <span class="btn-text">Sound: ON</span></button>
+        <button id="btn-timer-mode" class="pill-btn">⏱️ <span class="btn-text">30s Challenge</span></button>
+        <button id="btn-bg" class="pill-btn">🎨 <span class="btn-text">Arena: BD Baithak</span></button>
+        <button id="btn-slowmo" class="pill-btn">🐌 <span class="btn-text">Slow-Mo: OFF</span></button>
+        <button id="btn-fullscreen" class="icon-btn" title="Toggle Fullscreen">⛶ <span class="btn-text">Full</span></button>
+        <button id="btn-reset" class="icon-btn" title="Reset (R)">🔄 <span class="btn-text">Reset</span></button>
+      </div>
+
+      <!-- Timer countdown display (active in 30s challenge) -->
+      <div id="timer-display" class="timer-banner hidden">TIME: <span id="time-left">30</span>s</div>
+    </main>
+
+    <!-- Bottom Action Controls -->
+    <footer id="controls-section">
+      <div class="action-grid">
+        <!-- 1. SLAP -->
+        <button id="btn-slap" class="action-card btn-action-slap" data-action="slap">
+          <div class="key-hint">KEY: 1 / Q</div>
+          <div class="action-icon">🖐️</div>
+          <div class="action-name">SLAP</div>
+          <div class="action-desc">Fast Sting (+10 pts)</div>
+        </button>
+
+        <!-- 2. TIGHT SLAP -->
+        <button id="btn-tight-slap" class="action-card btn-action-tight" data-action="tight-slap">
+          <div class="key-hint">KEY: 2 / W</div>
+          <div class="action-icon">💥👋</div>
+          <div class="action-name">TIGHT SLAP</div>
+          <div class="action-desc">Thunder Windup (+35 pts)</div>
+        </button>
+
+        <!-- 3. PUNCH -->
+        <button id="btn-punch" class="action-card btn-action-punch" data-action="punch">
+          <div class="key-hint">KEY: 3 / E</div>
+          <div class="action-icon">👊</div>
+          <div class="action-name">PUNCH</div>
+          <div class="action-desc">Muscle Gut Buster (+25 pts)</div>
+        </button>
+
+        <!-- 4. KICK -->
+        <button id="btn-kick" class="action-card btn-action-kick" data-action="kick">
+          <div class="key-hint">KEY: 4 / R</div>
+          <div class="action-icon">🦵</div>
+          <div class="action-name">KICK</div>
+          <div class="action-desc">Roundhouse Launch (+50 pts)</div>
+        </button>
+
+        <!-- 5. ULTIMATE (RAGE BARRAGE) -->
+        <button id="btn-ultimate" class="action-card btn-action-ultimate" data-action="ultimate" disabled>
+          <div class="key-hint">KEY: SPACE</div>
+          <div class="action-icon">⚡🌪️</div>
+          <div class="action-name">RAPID BARRAGE</div>
+          <div class="action-desc" id="ult-desc">Fill Rage To Unlock</div>
+        </button>
+      </div>
+
+      <div class="footer-tip">
+        <span class="desktop-tip">💡 <strong>Desktop:</strong> Press <strong>1, 2, 3, 4</strong> or <strong>Q, W, E, R</strong>, and <strong>SPACE</strong> for Rage Barrage.</span>
+        <span class="mobile-tip">📱 <strong>Mobile & Touch:</strong> Tap the big buttons or tap directly on the character on screen!</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Audio, Characters, Game Logic -->
+  <script src="audio.js"></script>
+  <script src="characters.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
