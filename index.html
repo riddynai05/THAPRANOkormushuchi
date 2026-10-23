@@ -79,25 +79,25 @@
       <div class="mode-buttons-group">
         <button id="mode-btn-campaign" class="mode-nav-btn active" data-mode="campaign">
           <span class="btn-icon">🏆</span>
-          <span class="btn-label">Campaign Mode</span>
+          <span class="btn-label"><span class="label-full">Campaign Mode</span><span class="label-short">Campaign</span></span>
         </button>
         <button id="mode-btn-challenge" class="mode-nav-btn" data-mode="challenge">
           <span class="btn-icon">⏱️</span>
-          <span class="btn-label">30s Challenge</span>
+          <span class="btn-label"><span class="label-full">30s Challenge</span><span class="label-short">30s Rush</span></span>
         </button>
         <button id="mode-btn-freeplay" class="mode-nav-btn" data-mode="freeplay">
           <span class="btn-icon">🎮</span>
-          <span class="btn-label">Free Play</span>
+          <span class="btn-label"><span class="label-full">Free Play</span><span class="label-short">Free Play</span></span>
         </button>
       </div>
 
       <!-- Campaign Level Direct Switcher -->
       <div id="campaign-level-pills" class="level-pills-strip">
         <span class="strip-label">STAGES:</span>
-        <button class="level-pill active" data-level="0">1. বৈঠকখানা</button>
-        <button class="level-pill" data-level="1">2. টং দোকান</button>
-        <button class="level-pill" data-level="2">3. পুরান ঢাকা</button>
-        <button class="level-pill" data-level="3">4. সদরঘাট</button>
+        <button class="level-pill active" data-level="0"><span class="pill-full">1. বৈঠকখানা</span><span class="pill-short">L1: বৈঠক</span></button>
+        <button class="level-pill" data-level="1"><span class="pill-full">2. টং দোকান</span><span class="pill-short">L2: টং</span></button>
+        <button class="level-pill" data-level="2"><span class="pill-full">3. পুরান ঢাকা</span><span class="pill-short">L3: ঢাকা</span></button>
+        <button class="level-pill" data-level="3"><span class="pill-full">4. সদরঘাট</span><span class="pill-short">L4: ঘাট</span></button>
       </div>
     </nav>
 
@@ -127,109 +127,6 @@
 
       <!-- Stage Countdown Timer Banner -->
       <div id="timer-display" class="timer-banner">⏱️ TIME: <span id="time-left">45</span>s</div>
-
-      <!-- ============================================== -->
-      <!-- 1. STAGE CLEAR MODAL -->
-      <!-- ============================================== -->
-      <div id="modal-stage-clear" class="game-modal-overlay hidden">
-        <div class="modal-card win-card">
-          <div class="modal-ribbon">🎉 STAGE COMPLETED! 🎉</div>
-          <h2 class="modal-title" id="clear-level-title">লেভেল ১ সমাপ্ত!</h2>
-          <p class="modal-subtitle" id="clear-level-sub">আসামি পরাজয় স্বীকার করেছে ও সত্য উন্মোচিত হয়েছে!</p>
-
-          <!-- Star Rating -->
-          <div class="star-rating" id="clear-stars">
-            <span class="star star-active">⭐</span>
-            <span class="star star-active">⭐</span>
-            <span class="star star-active">⭐</span>
-          </div>
-
-          <!-- Stats Grid -->
-          <div class="modal-stats-grid">
-            <div class="stat-box">
-              <span class="stat-label">STAGE SCORE</span>
-              <span class="stat-value" id="clear-stat-score">1,250</span>
-            </div>
-            <div class="stat-box">
-              <span class="stat-label">TIME BONUS</span>
-              <span class="stat-value" id="clear-stat-time">+350</span>
-            </div>
-            <div class="stat-box">
-              <span class="stat-label">MAX STREAK</span>
-              <span class="stat-value" id="clear-stat-streak">18x</span>
-            </div>
-            <div class="stat-box">
-              <span class="stat-label">COMBAT RANK</span>
-              <span class="stat-value rank-gold" id="clear-stat-rank">S-RANK</span>
-            </div>
-          </div>
-
-          <div class="modal-actions">
-            <button id="btn-next-stage" class="modal-btn btn-primary">NEXT LEVEL ➡️</button>
-            <button id="btn-replay-stage" class="modal-btn btn-secondary">REPLAY 🔄</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ============================================== -->
-      <!-- 2. MISSION FAILED / TIME OUT MODAL -->
-      <!-- ============================================== -->
-      <div id="modal-game-over" class="game-modal-overlay hidden">
-        <div class="modal-card lose-card">
-          <div class="modal-ribbon lose-ribbon">💀 MISSION FAILED! 💀</div>
-          <h2 class="modal-title">আসামি পালিয়ে গেছে!</h2>
-          <p class="modal-subtitle">সময় শেষ! জনসমুদ্রে মিশে আসামি পালিয়ে রক্ষা পেল।</p>
-
-          <div class="modal-stats-grid lose-grid">
-            <div class="stat-box">
-              <span class="stat-label">REMAINING HP</span>
-              <span class="stat-value stat-danger" id="fail-stat-hp">120 HP</span>
-            </div>
-            <div class="stat-box">
-              <span class="stat-label">TOTAL SCORE</span>
-              <span class="stat-value" id="fail-stat-score">650</span>
-            </div>
-          </div>
-
-          <div class="modal-actions">
-            <button id="btn-retry-stage" class="modal-btn btn-primary">TRY AGAIN 🔄</button>
-            <button id="btn-restart-campaign" class="modal-btn btn-secondary">RESTART FROM LEVEL 1</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ============================================== -->
-      <!-- 3. GRAND CAMPAIGN TROPHY VICTORY MODAL -->
-      <!-- ============================================== -->
-      <div id="modal-campaign-clear" class="game-modal-overlay hidden">
-        <div class="modal-card champ-card">
-          <div class="trophy-icon">🏆</div>
-          <div class="modal-ribbon champ-ribbon">👑 মহা থাপড়াবীর চ্যাম্পিয়ন! 👑</div>
-          <h2 class="modal-title champ-title">CAMPAIGN COMPLETE!</h2>
-          <p class="modal-subtitle champ-sub">অভিনন্দন! আপনি বৈঠকখানা, টংয়ের দোকান, পুরান ঢাকা ও সদরঘাটের সব আসরে সফলভাবে সত্য উন্মোচন করেছেন!</p>
-
-          <div class="champ-banner">
-            <span class="champ-label">GRAND MASTER TITLE:</span>
-            <span class="champ-rank">👑 বাংলার অপরাজেয় থাপড়াবীর 👑</span>
-          </div>
-
-          <div class="modal-stats-grid">
-            <div class="stat-box">
-              <span class="stat-label">FINAL CAMPAIGN SCORE</span>
-              <span class="stat-value champ-score" id="champ-stat-score">18,500</span>
-            </div>
-            <div class="stat-box">
-              <span class="stat-label">MAX STREAK</span>
-              <span class="stat-value" id="champ-stat-streak">35x</span>
-            </div>
-          </div>
-
-          <div class="modal-actions">
-            <button id="btn-play-again" class="modal-btn btn-primary">PLAY CAMPAIGN AGAIN 🔄</button>
-            <button id="btn-freeplay" class="modal-btn btn-secondary">FREE PLAY MODE 🎮</button>
-          </div>
-        </div>
-      </div>
     </main>
 
     <!-- Bottom Action Controls -->
@@ -244,9 +141,9 @@
         </button>
 
         <!-- 2. TIGHT SLAP -->
-        <button id="btn-tight-slap" class="action-card btn-action-tight" data-action="tight-slap">
+        <button id="btn-tight-slap" class="action-card btn-action-tight-slap" data-action="tight-slap">
           <div class="key-hint">KEY: 2 / W</div>
-          <div class="action-icon">💥👋</div>
+          <div class="action-icon">💥🖐️</div>
           <div class="action-name">TIGHT SLAP</div>
           <div class="action-desc">Breaks Guard! (+55 Dmg)</div>
         </button>
@@ -281,6 +178,108 @@
         <span class="mobile-tip">📱 <strong>Mobile:</strong> Tap buttons or swipe horizontally/vertically to break guard and win!</span>
       </div>
     </footer>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- 1. STAGE CLEAR MODAL -->
+  <!-- ============================================== -->
+  <div id="modal-stage-clear" class="game-modal-overlay hidden">
+    <div class="modal-card win-card">
+      <div class="modal-ribbon">🎉 STAGE COMPLETED! 🎉</div>
+      <h2 class="modal-title" id="clear-level-title">লেভেল ১ সমাপ্ত!</h2>
+      <p class="modal-subtitle" id="clear-level-sub">আসামি পরাজয় স্বীকার করেছে ও সত্য উন্মোচিত হয়েছে!</p>
+
+      <!-- Star Rating -->
+      <div class="star-rating" id="clear-stars">
+        <span class="star star-active">⭐</span>
+        <span class="star star-active">⭐</span>
+        <span class="star star-active">⭐</span>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="modal-stats-grid">
+        <div class="stat-box">
+          <span class="stat-label">STAGE SCORE</span>
+          <span class="stat-value" id="clear-stat-score">1,250</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">TIME BONUS</span>
+          <span class="stat-value" id="clear-stat-time">+350</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">MAX STREAK</span>
+          <span class="stat-value" id="clear-stat-streak">18x</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">COMBAT RANK</span>
+          <span class="stat-value rank-gold" id="clear-stat-rank">S-RANK</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btn-next-stage" class="modal-btn btn-primary">NEXT LEVEL ➡️</button>
+        <button id="btn-replay-stage" class="modal-btn btn-secondary">REPLAY 🔄</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- 2. MISSION FAILED / TIME OUT MODAL -->
+  <!-- ============================================== -->
+  <div id="modal-game-over" class="game-modal-overlay hidden">
+    <div class="modal-card lose-card">
+      <div class="modal-ribbon lose-ribbon">💀 MISSION FAILED! 💀</div>
+      <h2 class="modal-title">আসামি পালিয়ে গেছে!</h2>
+      <p class="modal-subtitle">সময় শেষ! জনসমুদ্রে মিশে আসামি পালিয়ে রক্ষা পেল।</p>
+
+      <div class="modal-stats-grid lose-grid">
+        <div class="stat-box">
+          <span class="stat-label">REMAINING HP</span>
+          <span class="stat-value stat-danger" id="fail-stat-hp">120 HP</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">TOTAL SCORE</span>
+          <span class="stat-value" id="fail-stat-score">650</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btn-retry-stage" class="modal-btn btn-primary">TRY AGAIN 🔄</button>
+        <button id="btn-restart-campaign" class="modal-btn btn-secondary">RESTART FROM LEVEL 1</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- 3. GRAND CAMPAIGN TROPHY VICTORY MODAL -->
+  <!-- ============================================== -->
+  <div id="modal-campaign-clear" class="game-modal-overlay hidden">
+    <div class="modal-card champ-card">
+      <div class="trophy-icon">🏆</div>
+      <div class="modal-ribbon champ-ribbon">👑 মহা থাপড়াবীর চ্যাম্পিয়ন! 👑</div>
+      <h2 class="modal-title champ-title">CAMPAIGN COMPLETE!</h2>
+      <p class="modal-subtitle champ-sub">অভিনন্দন! আপনি বৈঠকখানা, টংয়ের দোকান, পুরান ঢাকা ও সদরঘাটের সব আসরে সফলভাবে সত্য উন্মোচন করেছেন!</p>
+
+      <div class="champ-banner">
+        <span class="champ-label">GRAND MASTER TITLE:</span>
+        <span class="champ-rank">👑 বাংলার অপরাজেয় থাপড়াবীর 👑</span>
+      </div>
+
+      <div class="modal-stats-grid">
+        <div class="stat-box">
+          <span class="stat-label">FINAL CAMPAIGN SCORE</span>
+          <span class="stat-value champ-score" id="champ-stat-score">18,500</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">MAX STREAK</span>
+          <span class="stat-value" id="champ-stat-streak">35x</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btn-play-again" class="modal-btn btn-primary">PLAY CAMPAIGN AGAIN 🔄</button>
+        <button id="btn-freeplay" class="modal-btn btn-secondary">FREE PLAY MODE 🎮</button>
+      </div>
   </div>
 
   <!-- Audio, Characters, Game Logic -->
