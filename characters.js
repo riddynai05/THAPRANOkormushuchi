@@ -628,12 +628,64 @@ class BeardPanjabiGuy {
 
     // Sweat / Spit flying particles
     this.sweatDrops = [];
+
+    // Guard & Defense Mechanics (for Levels & Tactical Gameplay)
+    this.isGuarding = false;
+    this.guardTimer = 0;
+    this.guardDuration = 2.4;
+    this.guardBreakStunTimer = 0;
+
+    // Dynamic Character Mood / Expression State
+    this.mood = 'smug'; // 'smug', 'nervous', 'terrified', 'guarding', 'stunned'
+  }
+
+  setGuarding(active, duration = 2.4) {
+    if (this.guardBreakStunTimer > 0) return; // Cannot guard while stunned
+    this.isGuarding = active;
+    this.guardTimer = duration;
   }
 
   takeHit(hitType) {
     this.hitType = hitType;
     this.hitTimer = 0.48;
 
+    // 1. GUARD BLOCK LOGIC
+    if (this.isGuarding) {
+      if (hitType === 'slap') {
+        // Fast slap is BLOCKED! Low chip impact, shield holds!
+        this.headAngle = 0.12;
+        this.bodyAngle = 0.05;
+        this.stumbleX = 14;
+        this.redCheek = Math.min(this.redCheek + 10, 100);
+        return { blocked: true, broken: false };
+      } else {
+        // Tight-Slap, Punch, Kick, or Ultimate SHATTERS GUARD!
+        this.isGuarding = false;
+        this.guardTimer = 0;
+        this.guardBreakStunTimer = 1.8; // Stunned for 1.8s
+        this.stumbleX = 85;
+        this.stumbleY = -20;
+        this.redCheek = 100;
+        this.dizziness = Math.min(this.dizziness + 35, 100);
+
+        // Burst sweat drops
+        for (let i = 0; i < 14; i++) {
+          const angle = -Math.PI * 0.3 + (Math.random() * Math.PI * 0.8);
+          const speed = 5 + Math.random() * 8;
+          this.sweatDrops.push({
+            x: -15 + Math.random() * 10,
+            y: -65 + Math.random() * 20,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 2,
+            alpha: 1,
+            life: 0.6
+          });
+        }
+        return { blocked: false, broken: true };
+      }
+    }
+
+    // 2. NORMAL UNGUARDED HIT REACTION
     // Spawn sweat / spit droplets on impact
     const dropCount = hitType === 'tight-slap' || hitType === 'kick' ? 12 : 6;
     for (let i = 0; i < dropCount; i++) {
@@ -704,6 +756,8 @@ class BeardPanjabiGuy {
     if (this.dizziness >= 100) {
       this.isDizzy = true;
     }
+
+    return { blocked: false, broken: false };
   }
 
   reset() {
@@ -716,6 +770,9 @@ class BeardPanjabiGuy {
     this.isDizzy = false;
     this.redCheek = 0;
     this.hitTimer = 0;
+    this.isGuarding = false;
+    this.guardTimer = 0;
+    this.guardBreakStunTimer = 0;
     this.tupi.isFlying = false;
     this.slipper.isFlying = false;
     this.sweatDrops = [];
@@ -724,6 +781,20 @@ class BeardPanjabiGuy {
   update(dt) {
     this.blinkTimer += dt;
     this.dizzyStarAngle += dt * 4.2;
+
+    // Guard timers
+    if (this.guardBreakStunTimer > 0) {
+      this.guardBreakStunTimer -= dt;
+      if (this.guardBreakStunTimer <= 0) this.guardBreakStunTimer = 0;
+    }
+
+    if (this.isGuarding) {
+      this.guardTimer -= dt;
+      if (this.guardTimer <= 0) {
+        this.isGuarding = false;
+        this.guardTimer = 0;
+      }
+    }
 
     // Decay slap mark slowly
     if (this.redCheek > 0) {
@@ -858,26 +929,28 @@ class BeardPanjabiGuy {
     }
 
     // ==========================================
-    // 2. WHITE SILK PUNJABI (KURTA)
+    // 2. WHITE SILK PUNJABI (KURTA) & ARMS
     // ==========================================
     const panjabiWhite = '#fdfdfd';
     const panjabiFold = '#d8dbe0';
 
-    // Left Arm in Punjabi Sleeve
-    ctx.fillStyle = panjabiWhite;
-    ctx.beginPath();
-    ctx.moveTo(-36, -35);
-    ctx.lineTo(-62, 25);
-    ctx.lineTo(-44, 30);
-    ctx.lineTo(-26, -20);
-    ctx.closePath();
-    ctx.fill();
+    if (!this.isGuarding) {
+      // Normal Relaxed Left Arm in Punjabi Sleeve
+      ctx.fillStyle = panjabiWhite;
+      ctx.beginPath();
+      ctx.moveTo(-36, -35);
+      ctx.lineTo(-62, 25);
+      ctx.lineTo(-44, 30);
+      ctx.lineTo(-26, -20);
+      ctx.closePath();
+      ctx.fill();
 
-    // Left Hand
-    ctx.fillStyle = '#e5a772';
-    ctx.beginPath();
-    ctx.arc(-52, 35, 11, 0, Math.PI * 2);
-    ctx.fill();
+      // Left Hand
+      ctx.fillStyle = '#e5a772';
+      ctx.beginPath();
+      ctx.arc(-52, 35, 11, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
     // Punjabi Main Body
     const bodyGrad = ctx.createLinearGradient(-45, -45, 45, 95);
@@ -926,21 +999,73 @@ class BeardPanjabiGuy {
       ctx.fill();
     }
 
-    // Right Arm
-    ctx.fillStyle = panjabiWhite;
-    ctx.beginPath();
-    ctx.moveTo(36, -35);
-    ctx.lineTo(62, 25);
-    ctx.lineTo(44, 30);
-    ctx.lineTo(26, -20);
-    ctx.closePath();
-    ctx.fill();
+    if (!this.isGuarding) {
+      // Normal Relaxed Right Arm
+      ctx.fillStyle = panjabiWhite;
+      ctx.beginPath();
+      ctx.moveTo(36, -35);
+      ctx.lineTo(62, 25);
+      ctx.lineTo(44, 30);
+      ctx.lineTo(26, -20);
+      ctx.closePath();
+      ctx.fill();
 
-    // Right Hand
-    ctx.fillStyle = '#e5a772';
-    ctx.beginPath();
-    ctx.arc(52, 35, 11, 0, Math.PI * 2);
-    ctx.fill();
+      // Right Hand
+      ctx.fillStyle = '#e5a772';
+      ctx.beginPath();
+      ctx.arc(52, 35, 11, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      // DEFENSIVE GUARD POSE: Crossed Forearms Protecting Face!
+      ctx.save();
+      // Left guarding arm across chest
+      ctx.fillStyle = panjabiWhite;
+      ctx.beginPath();
+      ctx.moveTo(-38, -35);
+      ctx.lineTo(12, -30);
+      ctx.lineTo(6, -8);
+      ctx.lineTo(-32, -15);
+      ctx.closePath();
+      ctx.fill();
+      // Left Guarding Fist
+      ctx.fillStyle = '#e5a772';
+      ctx.beginPath();
+      ctx.arc(16, -22, 13, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Right guarding arm crossed over
+      ctx.fillStyle = '#eceff1';
+      ctx.beginPath();
+      ctx.moveTo(38, -35);
+      ctx.lineTo(-18, -25);
+      ctx.lineTo(-12, -3);
+      ctx.lineTo(32, -15);
+      ctx.closePath();
+      ctx.fill();
+      // Right Guarding Fist
+      ctx.fillStyle = '#d79663';
+      ctx.beginPath();
+      ctx.arc(-22, -18, 13, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Glowing Defensive Shield Effect
+      ctx.strokeStyle = 'rgba(0, 210, 211, 0.85)';
+      ctx.lineWidth = 3.5;
+      ctx.shadowColor = '#00d2d3';
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = 'rgba(0, 210, 211, 0.12)';
+      ctx.beginPath();
+      ctx.ellipse(-2, -30, 48, 52, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Shield Comic Text
+      ctx.font = 'bold 15px Bangers, cursive';
+      ctx.fillStyle = '#00d2d3';
+      ctx.textAlign = 'center';
+      ctx.fillText('🛡️ GUARD!', -2, -62);
+      ctx.restore();
+    }
 
     // ==========================================
     // 3. HEAD, EXPRESSIONS & FLYING TUPI
@@ -995,8 +1120,8 @@ class BeardPanjabiGuy {
       ctx.fill();
     }
 
-    // Eyes - Highly expressive
-    if (this.isDizzy) {
+    // Eyes - Expressive depending on dynamic Mood & Hit status
+    if (this.isDizzy || this.guardBreakStunTimer > 0) {
       // Spiral dizzy eyes
       ctx.strokeStyle = '#2c3e50';
       ctx.lineWidth = 2.5;
@@ -1036,28 +1161,77 @@ class BeardPanjabiGuy {
         ctx.fill();
       }
     } else {
-      // Nervous shifty eyes
-      ctx.fillStyle = '#fff';
-      ctx.beginPath();
-      ctx.arc(-8, -4, 5.5, 0, Math.PI * 2);
-      ctx.arc(8, -4, 5.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#111';
-      ctx.beginPath();
-      const lookOffset = Math.sin(this.blinkTimer * 3) * 1.5;
-      ctx.arc(-8 + lookOffset, -4, 2.8, 0, Math.PI * 2);
-      ctx.arc(8 + lookOffset, -4, 2.8, 0, Math.PI * 2);
-      ctx.fill();
+      // DYNAMIC MOOD EYES
+      if (this.mood === 'terrified') {
+        // Terrified wide trembling pupils with tears
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(-8, -4, 7, 0, Math.PI * 2);
+        ctx.arc(8, -4, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#2c3e50';
+        ctx.beginPath();
+        const trem = Math.sin(this.blinkTimer * 12) * 1;
+        ctx.arc(-8 + trem, -4, 2.2, 0, Math.PI * 2);
+        ctx.arc(8 + trem, -4, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Cartoon tear streams
+        ctx.fillStyle = '#00d2d3';
+        ctx.beginPath();
+        ctx.ellipse(-15, 2, 2.8, 5.5, 0.25, 0, Math.PI * 2);
+        ctx.ellipse(15, 2, 2.8, 5.5, -0.25, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (this.mood === 'smug') {
+        // Smug half-closed confident eyes
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(-8, -4, 5.5, 0, Math.PI * 2);
+        ctx.arc(8, -4, 5.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#111';
+        ctx.beginPath();
+        ctx.arc(-7, -3, 2.8, 0, Math.PI * 2);
+        ctx.arc(9, -3, 2.8, 0, Math.PI * 2);
+        ctx.fill();
+        // Eyelid droop for arrogance
+        ctx.fillStyle = '#e5a772';
+        ctx.fillRect(-14, -10, 12, 5);
+        ctx.fillRect(2, -10, 12, 5);
+      } else {
+        // Nervous shifty eyes with temple sweat bead
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(-8, -4, 5.5, 0, Math.PI * 2);
+        ctx.arc(8, -4, 5.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#111';
+        ctx.beginPath();
+        const lookOffset = Math.sin(this.blinkTimer * 3) * 1.5;
+        ctx.arc(-8 + lookOffset, -4, 2.8, 0, Math.PI * 2);
+        ctx.arc(8 + lookOffset, -4, 2.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Nervous sweat bead on temple
+        ctx.fillStyle = '#74b9ff';
+        ctx.beginPath();
+        ctx.ellipse(-18, -14, 2.2, 4.2, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
-    // Eyebrows
+    // Eyebrows based on Mood
     ctx.strokeStyle = '#2d3436';
     ctx.lineWidth = 3.2;
     ctx.beginPath();
-    if (this.hitTimer > 0) {
-      // Panicked raised eyebrows
+    if (this.hitTimer > 0 || this.mood === 'terrified') {
+      // Panicked raised arched eyebrows
       ctx.arc(-8, -12, 7, Math.PI * 1.1, Math.PI * 1.9);
       ctx.arc(8, -12, 7, Math.PI * 1.1, Math.PI * 1.9);
+    } else if (this.mood === 'smug') {
+      // Smug one-raised eyebrow
+      ctx.moveTo(-14, -8); ctx.lineTo(-3, -7);
+      ctx.moveTo(3, -11); ctx.lineTo(14, -8);
     } else {
       // Worried slanted brows
       ctx.moveTo(-14, -10); ctx.lineTo(-3, -7);
@@ -1071,7 +1245,7 @@ class BeardPanjabiGuy {
     ctx.arc(0, 0, 3.8, 0, Math.PI * 2);
     ctx.fill();
 
-    // Mouth
+    // Mouth based on Mood & Hit
     ctx.fillStyle = '#2c3e50';
     ctx.beginPath();
     if (this.hitTimer > 0) {
@@ -1081,8 +1255,27 @@ class BeardPanjabiGuy {
       // Comic tooth showing
       ctx.fillStyle = '#fff';
       ctx.fillRect(-3, 6, 6, 4);
+    } else if (this.isGuarding) {
+      // Clenched teeth defensive grimace
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(-8, 8, 16, 5);
+      ctx.strokeStyle = '#2c3e50';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(-8, 8, 16, 5);
+    } else if (this.mood === 'terrified') {
+      // Trembling crying open mouth
+      const trem = Math.sin(this.blinkTimer * 14) * 1.5;
+      ctx.ellipse(0, 12, 7 + trem, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (this.mood === 'smug') {
+      // Smug cocky smirk
+      ctx.strokeStyle = '#2c3e50';
+      ctx.lineWidth = 2.5;
+      ctx.moveTo(-6, 8);
+      ctx.quadraticCurveTo(0, 12, 8, 6);
+      ctx.stroke();
     } else {
-      // Nervous tight mouth
+      // Nervous wavy tight mouth
       ctx.strokeStyle = '#2c3e50';
       ctx.lineWidth = 2.5;
       ctx.moveTo(-6, 9);
@@ -1203,6 +1396,27 @@ class BeardPanjabiGuy {
       }
     }
 
+    // ==========================================
+    // 9. GUARD BREAK STUN TEXT
+    // ==========================================
+    if (this.guardBreakStunTimer > 0) {
+      ctx.save();
+      ctx.font = 'bold 18px Bangers, cursive';
+      ctx.fillStyle = '#ff4757';
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 3;
+      ctx.textAlign = 'center';
+      const bounce = Math.sin(this.blinkTimer * 9) * 4;
+      ctx.strokeText('💥 GUARD BROKEN! STUNNED!', 0, -135 + bounce);
+      ctx.fillText('💥 GUARD BROKEN! STUNNED!', 0, -135 + bounce);
+      ctx.restore();
+    }
+
     ctx.restore();
   }
+}
+
+if (typeof window !== 'undefined') {
+  window.MuscleBodybuilder = MuscleBodybuilder;
+  window.BeardPanjabiGuy = BeardPanjabiGuy;
 }
