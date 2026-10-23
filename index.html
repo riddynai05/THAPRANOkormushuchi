@@ -3,37 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>THAPRANO KORMUSHUCHI - Web Arcade Game</title>
+  <title>THAPRANO KORMOSHUCHI - Web Arcade Game</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
   <div id="game-container">
     <!-- Top Header & Arcade HUD -->
     <header id="arcade-header">
       <div class="header-left">
-        <h1 class="game-logo">THAPRANO <span>KORMUSHUCHI</span></h1>
-        <div class="mode-badge" id="mode-indicator">FREE PLAY</div>
+        <h1 class="game-logo">THAPRANO <span>KORMOSHUCHI</span></h1>
+        <div class="header-sub-row">
+          <div class="level-badge" id="level-badge">⭐ LEVEL 1: বৈঠকখানা জেরা</div>
+          <div class="mode-badge" id="mode-indicator">CAMPAIGN</div>
+        </div>
       </div>
 
       <div class="header-center">
-        <!-- Dizzy / Endurance Meter -->
+        <!-- Target Boss HP Meter with Dynamic Mood Pill -->
         <div class="meter-box">
           <div class="meter-label">
-            <span>TARGET DIZZINESS</span>
-            <span id="dizzy-percent">0%</span>
+            <span class="label-with-icon">
+              🎯 TARGET HP
+              <span id="target-mood-badge" class="mood-pill mood-smug">😎 SMUG</span>
+              <span id="guard-badge" class="guard-pill hidden">🛡️ GUARDING</span>
+            </span>
+            <span id="target-hp-text">600 / 600</span>
           </div>
-          <div class="meter-bar-outer">
-            <div id="dizzy-bar-fill" class="meter-bar-inner"></div>
+          <div class="meter-bar-outer hp-outer">
+            <div id="target-hp-fill" class="meter-bar-inner hp-inner" style="width: 100%;"></div>
           </div>
         </div>
 
         <!-- Rage / Ultimate Meter -->
         <div class="meter-box">
           <div class="meter-label">
-            <span>RAGE POWER</span>
+            <span>⚡ RAGE POWER</span>
             <span id="rage-percent">0%</span>
           </div>
           <div class="meter-bar-outer rage-outer">
@@ -67,25 +74,162 @@
       </div>
     </header>
 
+    <!-- Dedicated Interactive Game Modes & Level Switcher Bar -->
+    <nav id="game-mode-bar" class="mode-navigation-bar">
+      <div class="mode-buttons-group">
+        <button id="mode-btn-campaign" class="mode-nav-btn active" data-mode="campaign">
+          <span class="btn-icon">🏆</span>
+          <span class="btn-label">Campaign Mode</span>
+        </button>
+        <button id="mode-btn-challenge" class="mode-nav-btn" data-mode="challenge">
+          <span class="btn-icon">⏱️</span>
+          <span class="btn-label">30s Challenge</span>
+        </button>
+        <button id="mode-btn-freeplay" class="mode-nav-btn" data-mode="freeplay">
+          <span class="btn-icon">🎮</span>
+          <span class="btn-label">Free Play</span>
+        </button>
+      </div>
+
+      <!-- Campaign Level Direct Switcher -->
+      <div id="campaign-level-pills" class="level-pills-strip">
+        <span class="strip-label">STAGES:</span>
+        <button class="level-pill active" data-level="0">1. বৈঠকখানা</button>
+        <button class="level-pill" data-level="1">2. টং দোকান</button>
+        <button class="level-pill" data-level="2">3. পুরান ঢাকা</button>
+        <button class="level-pill" data-level="3">4. সদরঘাট</button>
+      </div>
+    </nav>
+
     <!-- Canvas Game Arena -->
     <main id="canvas-wrapper">
       <canvas id="gameCanvas" width="1100" height="580"></canvas>
 
-      <!-- Comic floating overlay for critical hits -->
+      <!-- Comic floating banner for streak / power shouts -->
       <div id="comic-banner" class="comic-banner"></div>
 
-      <!-- Arena Selector Overlay (Quick buttons) -->
-      <div class="top-controls">
-        <button id="btn-sound" class="icon-btn" title="Toggle Sound (M)">🔊 <span class="btn-text">Sound: ON</span></button>
-        <button id="btn-timer-mode" class="pill-btn">⏱️ <span class="btn-text">30s Challenge</span></button>
-        <button id="btn-bg" class="pill-btn">🎨 <span class="btn-text">Arena: BD Baithak</span></button>
-        <button id="btn-slowmo" class="pill-btn">🐌 <span class="btn-text">Slow-Mo: OFF</span></button>
-        <button id="btn-fullscreen" class="icon-btn" title="Toggle Fullscreen">⛶ <span class="btn-text">Full</span></button>
-        <button id="btn-reset" class="icon-btn" title="Reset (R)">🔄 <span class="btn-text">Reset</span></button>
+      <!-- Level Mission Intro Banner (Briefly appears at start of stage) -->
+      <div id="level-intro-banner" class="level-intro-card hidden">
+        <div class="intro-level-num" id="intro-level-num">LEVEL 1 MISSION</div>
+        <h2 class="intro-title" id="intro-title">বৈঠকখানা জেরা (Baithak Interrogation)</h2>
+        <p class="intro-desc" id="intro-desc">প্রথম শুনানি! বৈঠকখানায় জেরা চলছে। আসল সত্য বের করতে হবে!</p>
+        <div class="intro-target-tag">🎯 TARGET: <span id="intro-target-name">মাওলানা জালাল</span> (HP: <span id="intro-target-hp">600</span>)</div>
       </div>
 
-      <!-- Timer countdown display (active in 30s challenge) -->
-      <div id="timer-display" class="timer-banner hidden">TIME: <span id="time-left">30</span>s</div>
+      <!-- Quick Action Options & Controls -->
+      <div class="top-controls">
+        <button id="btn-sound" class="icon-btn" title="Toggle Sound (M)">🔊 <span class="btn-text">Sound: ON</span></button>
+        <button id="btn-bg" class="pill-btn">🎨 <span class="btn-text" id="arena-btn-text">Arena: BD Baithak</span></button>
+        <button id="btn-slowmo" class="pill-btn">🐌 <span class="btn-text">Slow-Mo: OFF</span></button>
+        <button id="btn-fullscreen" class="icon-btn" title="Toggle Fullscreen">⛶ <span class="btn-text">Full</span></button>
+        <button id="btn-reset" class="icon-btn" title="Restart Mode (R)">🔄 <span class="btn-text">Retry</span></button>
+      </div>
+
+      <!-- Stage Countdown Timer Banner -->
+      <div id="timer-display" class="timer-banner">⏱️ TIME: <span id="time-left">45</span>s</div>
+
+      <!-- ============================================== -->
+      <!-- 1. STAGE CLEAR MODAL -->
+      <!-- ============================================== -->
+      <div id="modal-stage-clear" class="game-modal-overlay hidden">
+        <div class="modal-card win-card">
+          <div class="modal-ribbon">🎉 STAGE COMPLETED! 🎉</div>
+          <h2 class="modal-title" id="clear-level-title">লেভেল ১ সমাপ্ত!</h2>
+          <p class="modal-subtitle" id="clear-level-sub">আসামি পরাজয় স্বীকার করেছে ও সত্য উন্মোচিত হয়েছে!</p>
+
+          <!-- Star Rating -->
+          <div class="star-rating" id="clear-stars">
+            <span class="star star-active">⭐</span>
+            <span class="star star-active">⭐</span>
+            <span class="star star-active">⭐</span>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="modal-stats-grid">
+            <div class="stat-box">
+              <span class="stat-label">STAGE SCORE</span>
+              <span class="stat-value" id="clear-stat-score">1,250</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">TIME BONUS</span>
+              <span class="stat-value" id="clear-stat-time">+350</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">MAX STREAK</span>
+              <span class="stat-value" id="clear-stat-streak">18x</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">COMBAT RANK</span>
+              <span class="stat-value rank-gold" id="clear-stat-rank">S-RANK</span>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button id="btn-next-stage" class="modal-btn btn-primary">NEXT LEVEL ➡️</button>
+            <button id="btn-replay-stage" class="modal-btn btn-secondary">REPLAY 🔄</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- 2. MISSION FAILED / TIME OUT MODAL -->
+      <!-- ============================================== -->
+      <div id="modal-game-over" class="game-modal-overlay hidden">
+        <div class="modal-card lose-card">
+          <div class="modal-ribbon lose-ribbon">💀 MISSION FAILED! 💀</div>
+          <h2 class="modal-title">আসামি পালিয়ে গেছে!</h2>
+          <p class="modal-subtitle">সময় শেষ! জনসমুদ্রে মিশে আসামি পালিয়ে রক্ষা পেল।</p>
+
+          <div class="modal-stats-grid lose-grid">
+            <div class="stat-box">
+              <span class="stat-label">REMAINING HP</span>
+              <span class="stat-value stat-danger" id="fail-stat-hp">120 HP</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">TOTAL SCORE</span>
+              <span class="stat-value" id="fail-stat-score">650</span>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button id="btn-retry-stage" class="modal-btn btn-primary">TRY AGAIN 🔄</button>
+            <button id="btn-restart-campaign" class="modal-btn btn-secondary">RESTART FROM LEVEL 1</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- 3. GRAND CAMPAIGN TROPHY VICTORY MODAL -->
+      <!-- ============================================== -->
+      <div id="modal-campaign-clear" class="game-modal-overlay hidden">
+        <div class="modal-card champ-card">
+          <div class="trophy-icon">🏆</div>
+          <div class="modal-ribbon champ-ribbon">👑 মহা থাপড়াবীর চ্যাম্পিয়ন! 👑</div>
+          <h2 class="modal-title champ-title">CAMPAIGN COMPLETE!</h2>
+          <p class="modal-subtitle champ-sub">অভিনন্দন! আপনি বৈঠকখানা, টংয়ের দোকান, পুরান ঢাকা ও সদরঘাটের সব আসরে সফলভাবে সত্য উন্মোচন করেছেন!</p>
+
+          <div class="champ-banner">
+            <span class="champ-label">GRAND MASTER TITLE:</span>
+            <span class="champ-rank">👑 বাংলার অপরাজেয় থাপড়াবীর 👑</span>
+          </div>
+
+          <div class="modal-stats-grid">
+            <div class="stat-box">
+              <span class="stat-label">FINAL CAMPAIGN SCORE</span>
+              <span class="stat-value champ-score" id="champ-stat-score">18,500</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">MAX STREAK</span>
+              <span class="stat-value" id="champ-stat-streak">35x</span>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button id="btn-play-again" class="modal-btn btn-primary">PLAY CAMPAIGN AGAIN 🔄</button>
+            <button id="btn-freeplay" class="modal-btn btn-secondary">FREE PLAY MODE 🎮</button>
+          </div>
+        </div>
+      </div>
     </main>
 
     <!-- Bottom Action Controls -->
@@ -96,7 +240,7 @@
           <div class="key-hint">KEY: 1 / Q</div>
           <div class="action-icon">🖐️</div>
           <div class="action-name">SLAP</div>
-          <div class="action-desc">Fast Sting (+10 pts)</div>
+          <div class="action-desc">Fast Sting (+20 Dmg)</div>
         </button>
 
         <!-- 2. TIGHT SLAP -->
@@ -104,7 +248,7 @@
           <div class="key-hint">KEY: 2 / W</div>
           <div class="action-icon">💥👋</div>
           <div class="action-name">TIGHT SLAP</div>
-          <div class="action-desc">Thunder Windup (+35 pts)</div>
+          <div class="action-desc">Breaks Guard! (+55 Dmg)</div>
         </button>
 
         <!-- 3. PUNCH -->
@@ -112,7 +256,7 @@
           <div class="key-hint">KEY: 3 / E</div>
           <div class="action-icon">👊</div>
           <div class="action-name">PUNCH</div>
-          <div class="action-desc">Muscle Gut Buster (+25 pts)</div>
+          <div class="action-desc">Breaks Guard! (+40 Dmg)</div>
         </button>
 
         <!-- 4. KICK -->
@@ -120,7 +264,7 @@
           <div class="key-hint">KEY: 4 / R</div>
           <div class="action-icon">🦵</div>
           <div class="action-name">KICK</div>
-          <div class="action-desc">Roundhouse Launch (+50 pts)</div>
+          <div class="action-desc">Breaks Guard! (+75 Dmg)</div>
         </button>
 
         <!-- 5. ULTIMATE (RAGE BARRAGE) -->
@@ -133,8 +277,8 @@
       </div>
 
       <div class="footer-tip">
-        <span class="desktop-tip">💡 <strong>Desktop:</strong> Press <strong>1, 2, 3, 4</strong> or <strong>Q, W, E, R</strong>, and <strong>SPACE</strong> for Rage Barrage.</span>
-        <span class="mobile-tip">📱 <strong>Mobile & Touch:</strong> Tap the big buttons or tap directly on the character on screen!</span>
+        <span class="desktop-tip">💡 <strong>Tactics:</strong> When target mood turns to Guard 🛡️, use <strong>Tight Slap (2)</strong>, <strong>Punch (3)</strong>, or <strong>Kick (4)</strong> to BREAK GUARD!</span>
+        <span class="mobile-tip">📱 <strong>Mobile:</strong> Tap buttons or swipe horizontally/vertically to break guard and win!</span>
       </div>
     </footer>
   </div>
