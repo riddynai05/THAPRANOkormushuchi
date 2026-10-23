@@ -239,6 +239,14 @@ body {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
+/* Full and Short responsive text toggles */
+.label-short, .pill-short {
+  display: none;
+}
+.label-full, .pill-full {
+  display: inline;
+}
+
 .mode-buttons-group {
   display: flex;
   gap: 8px;
@@ -1087,7 +1095,7 @@ body {
   #game-container {
     padding: 6px;
     gap: 8px;
-    margin: 4px auto;
+    margin: 2px auto;
   }
   #arcade-header {
     padding: 8px 10px;
@@ -1095,7 +1103,7 @@ body {
     gap: 8px;
   }
   .game-logo {
-    font-size: 1.4rem;
+    font-size: 1.35rem;
   }
   .mode-badge {
     font-size: 0.65rem;
@@ -1104,7 +1112,7 @@ body {
     gap: 8px;
   }
   .meter-label {
-    font-size: 0.65rem;
+    font-size: 0.68rem;
   }
   .meter-bar-outer {
     height: 12px;
@@ -1136,6 +1144,61 @@ body {
   }
   .combo-num {
     font-size: 1.3rem;
+  }
+
+  /* Mode Navigation Bar Mobile Optimization */
+  .mode-navigation-bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 8px 10px;
+    gap: 8px;
+    border-radius: 14px;
+  }
+  .mode-buttons-group {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    width: 100%;
+  }
+  .mode-nav-btn {
+    padding: 8px 4px;
+    font-size: 0.78rem;
+    border-radius: 12px;
+    justify-content: center;
+    min-height: 42px;
+    text-align: center;
+    gap: 4px;
+  }
+  .mode-nav-btn .btn-icon {
+    font-size: 1.15rem;
+  }
+  .level-pills-strip {
+    display: flex;
+    width: 100%;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 2px 0;
+  }
+  .level-pills-strip::-webkit-scrollbar {
+    display: none;
+  }
+  .strip-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    flex-shrink: 0;
+    align-self: center;
+  }
+  .level-pill {
+    padding: 6px 12px;
+    font-size: 0.74rem;
+    flex-shrink: 0;
+    border-radius: 10px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   /* Top Controls inside Canvas */
@@ -1217,14 +1280,74 @@ body {
   }
 }
 
+/* Compact Mobile (max-width: 600px) */
+@media (max-width: 600px) {
+  .label-full, .pill-full {
+    display: none !important;
+  }
+  .label-short, .pill-short {
+    display: inline !important;
+  }
+  .header-center {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+  }
+  .meter-box {
+    width: 100%;
+  }
+  .meter-label {
+    font-size: 0.72rem;
+  }
+  .meter-bar-outer {
+    height: 13px;
+  }
+  .label-with-icon {
+    gap: 5px;
+  }
+  .mood-pill {
+    font-size: 0.62rem;
+    padding: 2px 6px;
+  }
+}
+
 /* Very Small Mobile Screens (max-width: 480px) */
 @media (max-width: 480px) {
+  #arcade-header {
+    padding: 6px 8px;
+  }
+  .game-logo {
+    font-size: 1.2rem;
+  }
+  .level-badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+  }
+  .mode-badge {
+    font-size: 0.6rem;
+  }
+  .mode-nav-btn {
+    padding: 6px 2px;
+    font-size: 0.72rem;
+    min-height: 38px;
+    gap: 2px;
+  }
+  .mode-nav-btn .btn-icon {
+    font-size: 1rem;
+  }
+  .level-pill {
+    padding: 5px 8px;
+    font-size: 0.7rem;
+    min-height: 28px;
+  }
   .action-grid {
     grid-template-columns: repeat(4, 1fr);
     gap: 5px;
   }
   .action-card {
     min-height: 64px;
+    padding: 6px 2px;
   }
   .action-icon {
     font-size: 1.4rem;
