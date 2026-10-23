@@ -1,10 +1,33 @@
-# 🥊 THAPRANO KORMUSHUCHI (থাপড়ানো কর্মসূচি)
+# 🥊 THAPRANO KORMOSHUCHI (থাপড়ানো কর্মসূচি)
 
 An interactive, responsive 2D arcade slapstick web game built with HTML5 Canvas, modern CSS, and procedurally synthesized Web Audio.
 
 ## 🌟 Game Overview
 
 Play as the **Muscular Bodybuilder** and test your power and timing against the **Bearded Guy in White Punjabi**!
+
+### 🎯 3 Interactive Game Modes (গেম মোড)
+1. **🏆 Campaign Mode**:
+   - 4 story-driven missions with unique objectives, countdown timers, and tactical boss defense AI:
+     - **Level 1**: *মিটিং রুমে বিচার* (Room Showdown) — 500 HP, 45s timer.
+     - **Level 2**: *টং দোকানের মুখোমুখি* (Tong Confrontation) — 800 HP, 40s timer.
+     - **Level 3**: *ছাদে ঘেরাও* (Rooftop Standoff) — 1,200 HP, 35s timer.
+     - **Level 4**: *লঞ্চঘাটে চূড়ান্ত বিচার* (Final Reckoning) — 1,800 HP, 30s timer.
+   - Guard & Guard-Break mechanics: The boss will raise his crossed arms to defend. Light slaps are blocked, but a **Tight Slap**, **Punch**, or **Kick** will shatter his guard and stun him!
+   - Victory star ratings (S-Rank, A-Rank, B-Rank) based on time left and maximum streak.
+
+2. **⏱️ 30s Challenge Rush**:
+   - High-speed 30-second time trial! Rack up the highest score possible before the timer runs out!
+
+3. **🎨 Free Play Practice**:
+   - Infinite sandbox with unlimited HP and no time limit. Freely cycle through all 4 arenas and test combo chains.
+
+### 🎭 Dynamic Boss Moods & Expressions (মুড ও প্রতিক্রিয়া)
+- **😎 Smug**: Arrogant half-closed eyes and smirking grin while HP > 65%.
+- **😰 Nervous**: Shifty eyes, furrowed brow, and sweat beads rolling down temples as HP drops between 30% - 65%.
+- **😭 Begging / Terrified**: Wide trembling pupils, comic tears pouring from eyes, and trembling open mouth when HP < 30%!
+- **🛡️ Guarding**: Crossed arms with glowing cyan energy shield and clenched teeth grimace.
+- **💫 Stunned**: Dizzy spiral eyes, orbiting cartoon stars, and stunned stumbling recoil upon guard break!
 
 ### 🎮 The Characters
 1. **The Muscle Bodybuilder (Player)**:
